@@ -285,6 +285,10 @@ class SDKServer {
       return buildCronUser(userInfo);
     }
 
+    if (!session.openId.startsWith("local:")) {
+      throw ForbiddenError("OAuth sessions are disabled for this application");
+    }
+
     const sessionUserId = session.openId;
     const signedInAt = new Date();
     let user = await db.getUserByOpenId(sessionUserId);
@@ -295,9 +299,9 @@ class SDKServer {
         const userInfo = await this.getUserInfoWithJwt(sessionToken ?? "");
         await db.upsertUser({
           openId: userInfo.openId,
-          name: userInfo.name || null,
+          name: userInfo.name || "OAuth User",
           email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? "oauth",
           lastSignedIn: signedInAt,
         });
         user = await db.getUserByOpenId(userInfo.openId);
@@ -336,9 +340,11 @@ function buildCronUser(
     id: -1,
     openId: userInfo.openId,
     name: userInfo.name || "Manus Scheduled Task",
+    phone: null,
+    passwordHash: null,
     email: null,
-    loginMethod: null,
-    role: "user",
+    loginMethod: "cron",
+    role: "broker",
     createdAt: now,
     updatedAt: now,
     lastSignedIn: now,

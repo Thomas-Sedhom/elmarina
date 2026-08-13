@@ -1,0 +1,28 @@
+# Project TODO
+
+- [x] Review the SaaS-Subscription-Manager reference architecture and reuse the existing monolith conventions.
+- [x] Resolve the role enum requirement: implemented the two explicitly named values `admin` and `broker`; the request says three values but does not name a third value.
+- [x] Replace OAuth-only entry flow with secure custom phone-number/password authentication.
+- [x] Extend `users` with unique phone number, securely hashed password, and the approved role enum.
+- [x] Automatically seed the first admin on application startup with exact name `سيدهم بسطوروس`, phone `01023999511`, role `admin`, and a securely hashed password.
+- [x] Add `broker_accounts` with transactional `total_weight` and `total_cash` summaries.
+- [x] Add sheet-entry storage with date, weight, description, cash, notes, and exact type labels `شغل` / `كسر` at the UI boundary.
+- [x] Add database indexes needed for broker ledger queries and safe deletion behavior.
+- [x] Implement admin-only procedures for broker creation, broker listing, broker detail, and sheet-entry create/edit/delete.
+- [x] Enforce broker account isolation for future broker reads and reject access to other accounts.
+- [x] Build the Arabic RTL custom login screen with decorative left visual and right-side form.
+- [x] Build the admin dashboard using the existing `DashboardLayout` component.
+- [x] Build the page titled `جميع العملاء` with searchable broker table showing name, phone, total weight, and total cash.
+- [x] Add the admin form for creating broker accounts with name, phone, and password.
+- [x] Build broker detail summary cards and the full ledger table with edit/delete actions.
+- [x] Build the Add/Edit sheet-entry dialog with validation and exact Arabic type labels.
+- [x] Implement atomic totals logic: `شغل` adds weight/cash, `كسر` subtracts weight/cash, edit applies only the delta, and delete reverses the prior effect.
+- [x] Add delete confirmation dialog and prevent partial state through a single database transaction.
+- [x] Apply Arabic RTL typography, polished spacing, responsive behavior, loading/empty/error states, and premium visual styling.
+- [x] Add Vitest coverage for work and breakage creation, edit delta, delete reversal, and unauthorized broker access.
+- [x] Run typecheck, tests, build, and visual browser verification.
+- [x] Review `todo.md` before the final checkpoint and save the single initial delivery checkpoint.
+- [x] Stop exposing `passwordHash` in all auth responses and return safe user DTOs.
+- [x] Add real foreign key constraints for broker account and sheet-entry relationships.
+- [x] Add explicit query error states for broker list, broker detail, and ledger views.
+- [x] Add backend procedure/integration-style tests for create/update/delete routing, totals rules, and cross-account access.
