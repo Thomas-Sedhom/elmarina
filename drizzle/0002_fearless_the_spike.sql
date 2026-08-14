@@ -1,2 +1,0 @@
-ALTER TABLE `broker_accounts` ADD CONSTRAINT `broker_accounts_user_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `sheet_entries` ADD CONSTRAINT `sheet_entries_broker_fk` FOREIGN KEY (`brokerAccountId`) REFERENCES `broker_accounts`(`id`) ON DELETE no action ON UPDATE no action;

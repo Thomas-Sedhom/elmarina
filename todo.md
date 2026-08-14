@@ -38,3 +38,12 @@
 - [x] Update tests for MongoDB repositories and transaction behavior without committing real credentials.
 - [x] Validate build, typecheck, tests, and connection-missing error handling; save a new checkpoint.
 - [x] Add and execute an explicit test for clean failure when `MONGODB_URI` is missing, then save the post-migration checkpoint.
+
+## Dependency Cleanup Request
+
+- [x] Inventory OAuth, Drizzle/SQL, and other starter dependency usage before removal.
+- [x] Remove OAuth routes, SDK initialization, client helpers, and obsolete OAuth environment requirements.
+- [x] Remove Drizzle schema/runtime packages/scripts and replace stale shared type exports with Mongo-compatible types.
+- [x] Remove unused packages only when confirmed unreferenced; preserve tRPC, Mongoose, Express, session, and UI dependencies.
+- [x] Run lockfile cleanup, typecheck, tests, build, and verify the OAuth warning is gone.
+- [x] Save a cleanup checkpoint after all validations pass.

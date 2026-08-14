@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { deleteEffectReversal, editEffectDelta, entryEffect } from "./db";
 import { canUserViewBrokerAccount, appRouter } from "./routers";
 import * as database from "./db";
-import type { User } from "../drizzle/schema";
+import type { User } from "@shared/types";
 import { BrokerAccountModel, SheetEntryModel, UserModel } from "./mongoModels";
 import { closeMongo } from "./mongo";
 

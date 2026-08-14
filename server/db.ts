@@ -1,9 +1,9 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import type { ClientSession } from "mongoose";
 import mongoose from "mongoose";
-import type { InsertSheetEntry, InsertUser, User } from "../drizzle/schema";
+import type { InsertSheetEntry, InsertUser, User } from "@shared/types";
 import { ENV } from "./_core/env";
-import { getMongo, nextId, ensureCounterAtLeast } from "./mongo";
+import { getMongo, nextId, ensureCounterAtLeast, ensureCounterDocuments } from "./mongo";
 import { BrokerAccountModel, SheetEntryModel, UserModel } from "./mongoModels";
 
 export async function getDb() {
@@ -122,6 +122,7 @@ export async function getUserByPhone(phone: string) {
 
 export async function ensureSeedAdmin() {
   await getMongo();
+  await ensureCounterDocuments();
   const phone = normalizePhone("01023999511");
   const seedOpenId = `local:${createHash("sha256").update(phone).digest("hex")}`;
   const passwordHash = hashPassword("Rm-24222682");
@@ -170,6 +171,7 @@ export async function getBrokerAccount(id: number) {
 
 export async function createBroker(input: { name: string; phone: string; password: string }) {
   await getMongo();
+  await ensureCounterDocuments();
   const phone = normalizePhone(input.phone);
   return mongoose.connection.transaction(async session => {
     const existing = await UserModel.findOne({ phone }).session(session);
@@ -203,6 +205,7 @@ async function updateTotals(accountId: number, delta: { weight: number; cash: nu
 
 export async function createSheetEntry(input: Omit<InsertSheetEntry, "id" | "createdAt" | "updatedAt">) {
   await getMongo();
+  await ensureCounterDocuments();
   return mongoose.connection.transaction(async session => {
     const entryId = await nextId("sheetEntries", session);
     await SheetEntryModel.create([{ id: entryId, brokerAccountId: input.brokerAccountId, businessDate: input.businessDate, weight: mongoDecimal(String(input.weight)), description: input.description, cash: mongoDecimal(String(input.cash)), notes: input.notes ?? null, type: input.type, createdBy: input.createdBy, updatedBy: input.updatedBy }], { session });

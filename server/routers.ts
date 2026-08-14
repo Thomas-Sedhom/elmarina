@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { User } from "../drizzle/schema";
+import type { User } from "@shared/types";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -35,7 +35,7 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const user = await db.authenticateLocalUser(input.phone, input.password);
         if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid phone or password" });
-        const sessionToken = await (await import("./_core/sdk")).sdk.createSessionToken(user.openId, { name: user.name });
+        const sessionToken = await (await import("./_core/sdk")).sdk.createSessionToken(user.openId, { name: user.name ?? undefined });
         ctx.res.cookie(COOKIE_NAME, sessionToken, {
           ...getSessionCookieOptions(ctx.req),
           maxAge: 1000 * 60 * 60 * 24 * 30,

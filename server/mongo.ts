@@ -27,22 +27,31 @@ export async function closeMongo() {
   if (mongoose.connection.readyState !== 0) await mongoose.disconnect();
 }
 
-export async function nextId(sequence: "users" | "brokerAccounts" | "sheetEntries", session?: ClientSession) {
+export type IdSequence = "users" | "brokerAccounts" | "sheetEntries";
+
+export async function ensureCounterDocuments() {
+  await getMongo();
+  for (const sequence of ["users", "brokerAccounts", "sheetEntries"] as IdSequence[]) {
+    try {
+      await CounterModel.updateOne({ _id: sequence }, { $setOnInsert: { seq: 0 } }, { upsert: true });
+    } catch (error: any) {
+      if (error?.code !== 11000) throw error;
+    }
+  }
+}
+
+export async function nextId(sequence: IdSequence, session?: ClientSession) {
   await getMongo();
   const counter = await CounterModel.findOneAndUpdate(
     { _id: sequence },
     { $inc: { seq: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true, session }
+    { new: true, session }
   ).lean();
-  if (!counter) throw new Error(`Failed to allocate ${sequence} id`);
+  if (!counter) throw new Error(`Counter ${sequence} is not initialized`);
   return counter.seq;
 }
 
-export async function ensureCounterAtLeast(sequence: "users" | "brokerAccounts" | "sheetEntries", value: number) {
+export async function ensureCounterAtLeast(sequence: IdSequence, value: number) {
   await getMongo();
-  await CounterModel.findOneAndUpdate(
-    { _id: sequence, seq: { $lt: value } },
-    { $set: { seq: value } },
-    { upsert: true }
-  );
+  await CounterModel.updateOne({ _id: sequence }, { $max: { seq: value } });
 }
