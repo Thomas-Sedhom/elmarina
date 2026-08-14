@@ -26,3 +26,15 @@
 - [x] Add real foreign key constraints for broker account and sheet-entry relationships.
 - [x] Add explicit query error states for broker list, broker detail, and ledger views.
 - [x] Add backend procedure/integration-style tests for create/update/delete routing, totals rules, and cross-account access.
+
+## MongoDB Migration Request
+
+- [x] Review the current SQL/Drizzle persistence layer and identify all server/database/auth dependencies.
+- [x] Add a `MONGODB_URI` environment variable configuration path for development and production.
+- [x] Add Mongoose dependency and define User, BrokerAccount, and SheetEntry models with indexes and references.
+- [x] Replace SQL database helpers and startup seed with MongoDB/Mongoose repositories.
+- [x] Preserve atomic broker total updates for work, breakage, edit, and delete using MongoDB transactions where supported.
+- [x] Preserve custom phone/password authentication, role guards, safe user DTOs, and router contracts.
+- [x] Update tests for MongoDB repositories and transaction behavior without committing real credentials.
+- [x] Validate build, typecheck, tests, and connection-missing error handling; save a new checkpoint.
+- [x] Add and execute an explicit test for clean failure when `MONGODB_URI` is missing, then save the post-migration checkpoint.
