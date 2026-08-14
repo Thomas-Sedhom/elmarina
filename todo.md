@@ -65,3 +65,8 @@
 - [x] Add a dedicated users module boundary for the authenticated current-user endpoint, even if broker-facing portal remains out of scope.
 - [x] Add request-level Express tests for auth login/me/logout, broker access control, and ledger create/update/delete endpoints.
 - [x] Re-run typecheck, tests, build, startup verification, and save the Express architecture checkpoint.
+
+## Production Startup Fix
+
+- [x] Align the production start command and generated server artifact so deployment starts `dist/index.js` consistently.
+- [x] Rebuild and verify production startup before the commit/push delivery.
