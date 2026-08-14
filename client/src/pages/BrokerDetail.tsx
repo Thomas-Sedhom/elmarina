@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
 import { ArrowRight, Edit3, Loader2, Plus, Trash2, Wallet, Weight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useRoute } from "wouter";
@@ -19,12 +19,12 @@ export default function BrokerDetail() {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
-  const utils = trpc.useUtils();
-  const account = trpc.brokers.get.useQuery({ id }, { enabled: Number.isFinite(id) });
-  const entries = trpc.sheetEntries.list.useQuery({ brokerAccountId: id }, { enabled: Number.isFinite(id) });
-  const create = trpc.sheetEntries.create.useMutation({ onSuccess: () => { setFormOpen(false); utils.brokers.get.invalidate({ id }); utils.sheetEntries.list.invalidate({ brokerAccountId: id }); } });
-  const update = trpc.sheetEntries.update.useMutation({ onSuccess: () => { setFormOpen(false); utils.brokers.get.invalidate({ id }); utils.sheetEntries.list.invalidate({ brokerAccountId: id }); } });
-  const remove = trpc.sheetEntries.delete.useMutation({ onSuccess: () => { setDeleteId(null); utils.brokers.get.invalidate({ id }); utils.sheetEntries.list.invalidate({ brokerAccountId: id }); } });
+  const utils = api.useUtils();
+  const account = api.brokers.get.useQuery({ id }, { enabled: Number.isFinite(id) });
+  const entries = api.entries.list.useQuery({ brokerAccountId: id }, { enabled: Number.isFinite(id) });
+  const create = api.entries.create.useMutation({ onSuccess: () => { setFormOpen(false); utils.brokers.get.invalidate({ id }); utils.entries.list.invalidate({ brokerAccountId: id }); } });
+  const update = api.entries.update.useMutation({ onSuccess: () => { setFormOpen(false); utils.brokers.get.invalidate({ id }); utils.entries.list.invalidate({ brokerAccountId: id }); } });
+  const remove = api.entries.delete.useMutation({ onSuccess: () => { setDeleteId(null); utils.brokers.get.invalidate({ id }); utils.entries.list.invalidate({ brokerAccountId: id }); } });
   const loading = account.isLoading || entries.isLoading;
   const mutationError = create.error || update.error;
   const totalEntries = useMemo(() => entries.data?.length ?? 0, [entries.data]);

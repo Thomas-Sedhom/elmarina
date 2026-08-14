@@ -1,13 +1,11 @@
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
 export function useAuth(options: { redirectPath?: string } = {}) {
   const [, navigate] = useLocation();
-  const query = trpc.auth.me.useQuery(undefined, { retry: false, staleTime: 30_000 });
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: () => query.refetch(),
-  });
+  const query = api.auth.me.useQuery();
+  const logoutMutation = api.auth.logout.useMutation({ onSuccess: () => query.refetch() });
 
   useEffect(() => {
     if (!query.isLoading && !query.data && options.redirectPath) navigate(options.redirectPath);

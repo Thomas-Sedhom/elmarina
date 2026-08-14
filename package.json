@@ -4,9 +4,9 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "NODE_ENV=development tsx watch server/src/server.ts",
+    "build": "vite build && esbuild server/src/server.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "start": "NODE_ENV=production node dist/server.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run"
@@ -42,9 +42,6 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tanstack/react-query": "^5.90.2",
-    "@trpc/client": "^11.6.0",
-    "@trpc/react-query": "^11.6.0",
-    "@trpc/server": "^11.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

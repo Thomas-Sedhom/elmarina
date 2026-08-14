@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
 import { ArrowLeft, Gem, Loader2, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
@@ -12,7 +12,7 @@ export default function Login() {
   const [, navigate] = useLocation();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const login = trpc.auth.login.useMutation({ onSuccess: () => navigate("/admin") });
+  const login = api.auth.login.useMutation({ onSuccess: () => navigate("/admin") });
 
   useEffect(() => { if (!loading && user) navigate("/admin"); }, [loading, navigate, user]);
 

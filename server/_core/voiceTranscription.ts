@@ -9,7 +9,7 @@
  * Example usage:
  * ```tsx
  * // Frontend component
- * const transcribeMutation = trpc.voice.transcribe.useMutation({
+ * const transcribeMutation = httpApi.voice.transcribe({
  *   onSuccess: (data) => {
  *     console.log(data.text); // Full transcription
  *     console.log(data.language); // Detected language
@@ -242,14 +242,14 @@ function getLanguageName(langCode: string): string {
 }
 
 /**
- * Example tRPC procedure implementation:
+ * Example Express route implementation:
  * 
  * ```ts
- * // In server/routers.ts
+ * // In an Express module route
  * import { transcribeAudio } from "./_core/voiceTranscription";
  * 
- * export const voiceRouter = router({
- *   transcribe: protectedProcedure
+ * export const voiceRouter = router.post(
+ *   transcribe: requireAuth middleware
  *     .input(z.object({
  *       audioUrl: z.string(),
  *       language: z.string().optional(),
@@ -260,10 +260,8 @@ function getLanguageName(langCode: string): string {
  *       
  *       // Check if it's an error
  *       if ('error' in result) {
- *         throw new TRPCError({
- *           code: 'BAD_REQUEST',
- *           message: result.error,
- *           cause: result,
+ *         throw new Error(
+ *           result.error,
  *         });
  *       }
  *       

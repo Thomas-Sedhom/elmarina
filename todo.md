@@ -47,3 +47,21 @@
 - [x] Remove unused packages only when confirmed unreferenced; preserve tRPC, Mongoose, Express, session, and UI dependencies.
 - [x] Run lockfile cleanup, typecheck, tests, build, and verify the OAuth warning is gone.
 - [x] Save a cleanup checkpoint after all validations pass.
+
+## Express Backend Rewrite Request
+
+- [x] Review the SaaS-Subscription-Manager server module structure and map all current tRPC dependencies.
+- [x] Create the Express application/module structure used by the SaaS reference, including config, middleware, routes, controllers, services, and repositories.
+- [x] Move local session authentication, auth guards, and error handling to Express middleware/routes.
+- [x] Move users, broker accounts, and ledger operations to Express routes while preserving MongoDB transactions and totals rules.
+- [x] Replace the frontend tRPC client with a typed HTTP API client and preserve loading/error/auth behavior.
+- [x] Remove tRPC server/client packages, adapters, routers, and obsolete API wiring after migration.
+- [x] Add/update Express route and service tests for authentication, authorization, broker access isolation, and ledger transactions.
+- [x] Run typecheck, tests, build, and startup verification; checkpoint remains the final delivery action.
+
+## Express Architecture Completion
+
+- [x] Add dedicated repository, service, and controller files for brokers and ledger; keep route files limited to mounting and middleware.
+- [x] Add a dedicated users module boundary for the authenticated current-user endpoint, even if broker-facing portal remains out of scope.
+- [x] Add request-level Express tests for auth login/me/logout, broker access control, and ledger create/update/delete endpoints.
+- [x] Re-run typecheck, tests, build, startup verification, and save the Express architecture checkpoint.
