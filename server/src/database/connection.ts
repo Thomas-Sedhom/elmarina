@@ -1,5 +1,5 @@
 import mongoose, { type ClientSession } from "mongoose";
-import { CounterModel } from "./mongoModels";
+import { CounterModel } from "./schemas/counter.schema";
 
 let connecting: Promise<typeof mongoose> | null = null;
 

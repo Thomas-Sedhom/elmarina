@@ -1,4 +1,4 @@
-import { ForbiddenError, NotFoundError } from "@shared/_core/errors";
+import { ForbiddenError, NotFoundError } from "@shared/errors";
 import type { User } from "@shared/types";
 import { brokersRepository } from "./brokers.repository";
 

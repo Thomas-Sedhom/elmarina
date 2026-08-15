@@ -1,5 +1,5 @@
 import type { User } from "@shared/types";
-import { ForbiddenError, NotFoundError } from "@shared/_core/errors";
+import { ForbiddenError, NotFoundError } from "@shared/errors";
 
 export function assertCanViewBrokerAccount(user: User, account: { userId: number } | null | undefined) {
   if (!account) throw NotFoundError("Broker account not found");

@@ -1,4 +1,4 @@
-import * as db from "../../../db";
+import * as db from "../../database";
 
 export class UsersRepository {
   findByOpenId(openId: string) { return db.getUserByOpenId(openId); }

@@ -2,8 +2,8 @@ import "dotenv/config";
 import { createServer } from "http";
 import net from "net";
 import { createApp } from "./app";
-import { ensureSeedAdmin } from "../db";
-import { serveStatic, setupVite } from "../_core/vite";
+import { ensureSeedAdmin } from "./database";
+import { serveStatic, setupVite } from "./shared/vite";
 import { errorHandler, notFoundHandler } from "./shared/utils/http";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -21,21 +21,30 @@ async function findAvailablePort(startPort: number) {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-export async function startServer() {
+async function startServer() {
   const app = createApp();
   const server = createServer(app);
-  if (process.env.NODE_ENV === "development") await setupVite(app, server);
-  else serveStatic(app);
+
+  if (process.env.NODE_ENV === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
   app.use(notFoundHandler);
   app.use(errorHandler);
+
   await ensureSeedAdmin();
-  const preferredPort = Number.parseInt(process.env.PORT || "3000", 10);
+
+  const preferredPort = parseInt(process.env.PORT || "3000", 10);
   const port = await findAvailablePort(preferredPort);
-  server.listen(port, () => console.log(`Server running on http://localhost:${port}/`));
-  return server;
+
+  server.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}/`);
+  });
 }
 
-startServer().catch(error => {
-  console.error(error);
-  process.exitCode = 1;
+startServer().catch(err => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });

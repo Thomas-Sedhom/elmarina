@@ -1,8 +1,8 @@
 import { COOKIE_NAME } from "@shared/const";
-import { UnauthorizedError } from "@shared/_core/errors";
-import { getSessionCookieOptions } from "../../../_core/cookies";
-import { sdk } from "../../../_core/sdk";
-import * as db from "../../../db";
+import { UnauthorizedError } from "@shared/errors";
+import { getSessionCookieOptions } from "../../shared/utils/cookies";
+import { sdk } from "../../shared/security/session";
+import * as db from "../../database";
 import type { Request, Response } from "express";
 
 export class AuthService {

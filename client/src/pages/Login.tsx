@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { ArrowLeft, Gem, Loader2, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
   const { user, loading } = useAuth();

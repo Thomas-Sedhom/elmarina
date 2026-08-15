@@ -1,5 +1,5 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { HttpError } from "@shared/_core/errors";
+import { HttpError } from "@shared/errors";
 
 export const asyncHandler = (handler: (req: Request, res: Response, next: NextFunction) => unknown): RequestHandler =>
   (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);

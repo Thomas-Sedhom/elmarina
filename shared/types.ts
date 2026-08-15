@@ -8,7 +8,6 @@ export type User = {
   phone: string | null;
   passwordHash: string | null;
   email: string | null;
-  loginMethod: string;
   role: Role;
   createdAt: Date;
   updatedAt: Date;
@@ -33,4 +32,4 @@ export type SheetEntry = {
 };
 
 export type InsertSheetEntry = Omit<SheetEntry, "id" | "createdAt" | "updatedAt"> & Partial<Pick<SheetEntry, "createdAt" | "updatedAt">>;
-export * from "./_core/errors";
+export * from "./errors";

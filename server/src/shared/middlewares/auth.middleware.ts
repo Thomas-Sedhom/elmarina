@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import { ForbiddenError, UnauthorizedError } from "@shared/_core/errors";
-import { sdk } from "../../../_core/sdk";
+import { ForbiddenError, UnauthorizedError } from "@shared/errors";
+import { sdk } from "../security/session";
 
 export async function requireAuth(req: Request, _res: Response, next: NextFunction) {
   try {

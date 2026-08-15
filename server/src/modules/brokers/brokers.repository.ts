@@ -1,4 +1,4 @@
-import * as db from "../../../db";
+import * as db from "../../database";
 
 export class BrokersRepository {
   list(search?: string) { return db.listBrokers(search); }

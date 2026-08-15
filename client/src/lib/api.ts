@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 
-export type ApiUser = { id: number; openId: string; name: string | null; phone: string | null; email: string | null; loginMethod: string; role: "admin" | "broker"; createdAt: string; updatedAt: string; lastSignedIn: string };
+export type ApiUser = { id: number; openId: string; name: string | null; phone: string | null; email: string | null; role: "admin" | "broker"; createdAt: string; updatedAt: string; lastSignedIn: string };
 export type BrokerAccount = { id: number; userId: number; name: string | null; phone: string | null; totalWeight: string; totalCash: string };
 export type SheetEntry = { id: number; brokerAccountId: number; businessDate: string; weight: string; description: string; cash: string; notes: string | null; type: "work" | "breakage"; createdBy: number; updatedBy: number; createdAt: string; updatedAt: string };
 export type EntryInput = { brokerAccountId: number; businessDate: string; weight: string; description: string; cash: string; notes?: string | null; type: "work" | "breakage" };

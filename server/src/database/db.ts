@@ -2,9 +2,9 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import type { ClientSession } from "mongoose";
 import mongoose from "mongoose";
 import type { InsertSheetEntry, InsertUser, User } from "@shared/types";
-import { ENV } from "./_core/env";
-import { getMongo, nextId, ensureCounterAtLeast, ensureCounterDocuments } from "./mongo";
-import { BrokerAccountModel, SheetEntryModel, UserModel } from "./mongoModels";
+import { ENV } from "../shared/config/env";
+import { getMongo, nextId, ensureCounterDocuments } from "./connection";
+import { BrokerAccountModel, SheetEntryModel, UserModel } from "./schemas";
 
 export async function getDb() {
   return getMongo();
@@ -24,7 +24,6 @@ function toUser(doc: any): User {
     phone: doc.phone ?? null,
     passwordHash: doc.passwordHash ?? null,
     email: doc.email ?? null,
-    loginMethod: doc.loginMethod ?? "phone",
     role: doc.role,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -82,7 +81,6 @@ export async function upsertUser(user: Partial<InsertUser> & Pick<InsertUser, "o
   if (user.name !== undefined) update.name = user.name;
   if (user.phone !== undefined) update.phone = user.phone;
   if (user.email !== undefined) update.email = user.email;
-  if (user.loginMethod !== undefined) update.loginMethod = user.loginMethod;
   if (user.passwordHash !== undefined) update.passwordHash = user.passwordHash;
   if (user.role !== undefined || user.openId === ENV.ownerOpenId) update.role = user.role ?? "admin";
   if (existing) {
@@ -97,7 +95,6 @@ export async function upsertUser(user: Partial<InsertUser> & Pick<InsertUser, "o
     phone: user.phone ?? null,
     passwordHash: user.passwordHash ?? null,
     email: user.email ?? null,
-    loginMethod: user.loginMethod ?? "phone",
     role: user.role ?? "broker",
     lastSignedIn: user.lastSignedIn ?? new Date(),
   });
@@ -120,28 +117,43 @@ export async function getUserByPhone(phone: string) {
   return result ? toUser(result) : undefined;
 }
 
-export async function ensureSeedAdmin() {
-  await getMongo();
-  await ensureCounterDocuments();
-  const phone = normalizePhone("01023999511");
-  const seedOpenId = `local:${createHash("sha256").update(phone).digest("hex")}`;
-  const passwordHash = hashPassword("Rm-24222682");
-  const existing = await UserModel.findOne({ $or: [{ phone }, { openId: seedOpenId }] }).select("+passwordHash").lean();
-  if (!existing) {
-    const id = await nextId("users");
-    await UserModel.create({ id, openId: seedOpenId, name: "سيدهم بسطوروس", phone, passwordHash, loginMethod: "phone", role: "admin" });
-    console.log("[Auth] Seeded initial admin account in MongoDB");
-    return;
-  }
-  await ensureCounterAtLeast("users", existing.id);
-  await UserModel.updateOne({ id: existing.id }, { $set: { openId: seedOpenId, name: "سيدهم بسطوروس", phone, passwordHash, loginMethod: "phone", role: "admin" } });
-}
-
 export async function authenticateLocalUser(phone: string, password: string) {
   const user = await getUserByPhone(phone);
   if (!user || !verifyPassword(password, user.passwordHash)) return null;
   await UserModel.updateOne({ id: user.id }, { $set: { lastSignedIn: new Date() } });
   return user;
+}
+
+export async function ensureSeedAdmin() {
+  await getMongo();
+  await ensureCounterDocuments();
+  const phone = normalizePhone(process.env.ADMIN_PHONE || "01023999511");
+  const password = process.env.ADMIN_PASSWORD || "Rm-24222682";
+  const name = process.env.ADMIN_NAME || "سيدهم بسطوروس";
+  const existing = await UserModel.findOne({ role: "admin" }).select("+passwordHash");
+  if (existing) {
+    const update: any = {
+      name,
+      phone,
+      passwordHash: hashPassword(password),
+    };
+    if (!existing.id) {
+      update.id = await nextId("users");
+    }
+    await UserModel.updateOne({ _id: (existing as any)._id }, { $set: update });
+    return;
+  }
+  const id = await nextId("users");
+  await UserModel.create({
+    id,
+    openId: `local:${createHash("sha256").update(`${phone}:${id}`).digest("hex")}`,
+    name,
+    phone,
+    passwordHash: hashPassword(password),
+    email: null,
+    role: "admin",
+    lastSignedIn: new Date(),
+  });
 }
 
 export async function listBrokers(search?: string) {
@@ -178,7 +190,7 @@ export async function createBroker(input: { name: string; phone: string; passwor
     if (existing) throw new Error("PHONE_ALREADY_EXISTS");
     const userId = await nextId("users", session);
     const accountId = await nextId("brokerAccounts", session);
-    await UserModel.create([{ id: userId, openId: `local:${createHash("sha256").update(`${phone}:${userId}`).digest("hex")}`, name: input.name.trim(), phone, passwordHash: hashPassword(input.password), loginMethod: "phone", role: "broker" }], { session });
+    await UserModel.create([{ id: userId, openId: `local:${createHash("sha256").update(`${phone}:${userId}`).digest("hex")}`, name: input.name.trim(), phone, passwordHash: hashPassword(input.password), role: "broker" }], { session });
     await BrokerAccountModel.create([{ id: accountId, userId, totalWeight: mongoDecimal("0"), totalCash: mongoDecimal("0") }], { session });
     return { id: accountId, userId };
   });
