@@ -1,4 +1,4 @@
-// api/index.ts
+// api/handler.ts
 import "dotenv/config";
 
 // server/src/app.ts
@@ -820,7 +820,7 @@ async function connectDatabase() {
   return connecting;
 }
 
-// api/index.ts
+// api/handler.ts
 var app = createApp();
 var initialized = false;
 async function ensureInit() {
