@@ -1,12 +1,12 @@
 {
   "version": 2,
   "installCommand": "rm -rf node_modules && pnpm install --frozen-lockfile --ignore-scripts",
-  "buildCommand": "vite build",
+  "buildCommand": "pnpm run build",
   "outputDirectory": "dist/public",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.ts"
+      "destination": "/api/index.js"
     },
     {
       "source": "/(.*)",
