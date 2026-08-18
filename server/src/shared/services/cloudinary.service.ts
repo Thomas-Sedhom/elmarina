@@ -140,12 +140,12 @@ export class CloudinaryService {
    */
   public getOptimizedUrl(publicId: string, options: TransformationOptions = {}): string {
     this.init();
-    return cloudinary.url(publicId, {
+    const defaults = {
       fetch_format: "auto",
       quality: "auto",
       secure: true,
-      ...options,
-    });
+    };
+    return cloudinary.url(publicId, Object.assign({}, defaults, options));
   }
 
   /**
