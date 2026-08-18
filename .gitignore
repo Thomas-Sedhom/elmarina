@@ -4,7 +4,6 @@
 
 # Build outputs
 dist/
-api/index.js
 build/
 *.dist
 
