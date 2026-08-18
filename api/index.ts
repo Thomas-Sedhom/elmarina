@@ -5,7 +5,6 @@ import { connectDatabase } from "../server/src/database";
 import { usersRepository } from "../server/src/modules/users/users.repository";
 const app = createApp();
 let initialized = false;
-
 async function ensureInit() {
   if (!initialized) {
     await connectDatabase();
