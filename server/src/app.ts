@@ -1,7 +1,6 @@
 import express from "express";
 import { routes } from "./routes";
 import { errorHandler } from "./shared/utils/http";
-
 export function createApp() {
   const app = express();
   app.use(express.json({ limit: "50mb" }));
