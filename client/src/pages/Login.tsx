@@ -12,9 +12,19 @@ export default function Login() {
   const [, navigate] = useLocation();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const login = api.auth.login.useMutation({ onSuccess: () => navigate("/admin") });
+  const login = api.auth.login.useMutation({
+    onSuccess: data => {
+      if (data.user.role === "broker") navigate("/portal");
+      else navigate("/admin");
+    },
+  });
 
-  useEffect(() => { if (!loading && user) navigate("/admin"); }, [loading, navigate, user]);
+  useEffect(() => {
+    if (!loading && user) {
+      if (user.role === "broker") navigate("/portal");
+      else navigate("/admin");
+    }
+  }, [loading, navigate, user]);
 
   return <main dir="rtl" className="min-h-screen bg-[#f7f4ef] text-[#201b17]">
     <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">

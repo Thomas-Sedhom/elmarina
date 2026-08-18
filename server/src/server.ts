@@ -2,7 +2,8 @@ import "dotenv/config";
 import { createServer } from "http";
 import net from "net";
 import { createApp } from "./app";
-import { ensureSeedAdmin } from "./database";
+import { connectDatabase } from "./database";
+import { usersRepository } from "./modules/users/users.repository";
 import { serveStatic, setupVite } from "./shared/vite";
 import { errorHandler, notFoundHandler } from "./shared/utils/http";
 
@@ -34,7 +35,8 @@ async function startServer() {
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  await ensureSeedAdmin();
+  await connectDatabase();
+  await usersRepository.ensureSeedAdmin();
 
   const preferredPort = parseInt(process.env.PORT || "3000", 10);
   const port = await findAvailablePort(preferredPort);

@@ -4,12 +4,12 @@ import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
 import type { User } from "@shared/types";
-import * as db from "../../database";
+import { usersRepository } from "../../modules/users/users.repository";
 import { ENV } from "../config/env";
 
 const isNonEmptyString = (value: unknown): value is string => typeof value === "string" && value.length > 0;
 
-export type SessionPayload = { openId: string; appId: string; name: string };
+export type SessionPayload = { userId: string; name: string };
 
 class SessionSDK {
   private parseCookies(cookieHeader: string | undefined) {
@@ -22,8 +22,8 @@ class SessionSDK {
     return new TextEncoder().encode(ENV.cookieSecret);
   }
 
-  async createSessionToken(openId: string, options: { expiresInMs?: number; name?: string } = {}) {
-    return this.signSession({ openId, appId: ENV.appId || "elmarina", name: options.name || "" }, options);
+  async createSessionToken(userId: string, options: { expiresInMs?: number; name?: string } = {}) {
+    return this.signSession({ userId, name: options.name || "" }, options);
   }
 
   async signSession(payload: SessionPayload, options: { expiresInMs?: number } = {}) {
@@ -40,9 +40,9 @@ class SessionSDK {
     if (!cookieValue) return null;
     try {
       const { payload } = await jwtVerify(cookieValue, this.getSessionSecret(), { algorithms: ["HS256"] });
-      const { openId, appId, name } = payload as Record<string, unknown>;
-      if (!isNonEmptyString(openId) || !isNonEmptyString(appId) || typeof name !== "string") return null;
-      return { openId, appId, name };
+      const { userId, name } = payload as Record<string, unknown>;
+      if (!isNonEmptyString(userId) || typeof name !== "string") return null;
+      return { userId, name };
     } catch {
       return null;
     }
@@ -56,11 +56,9 @@ class SessionSDK {
       if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) sessionToken = authHeader.slice(7);
     }
     const session = await this.verifySession(sessionToken);
-    if (!session) throw ForbiddenError("Invalid local session");
-    if (!session.openId.startsWith("local:")) throw ForbiddenError("Only local sessions are supported");
-    const user = await db.getUserByOpenId(session.openId);
+    if (!session) throw ForbiddenError("Invalid session");
+    const user = await usersRepository.findById(session.userId);
     if (!user) throw ForbiddenError("User not found");
-    await db.upsertUser({ openId: user.openId, lastSignedIn: new Date() });
     return user;
   }
 }

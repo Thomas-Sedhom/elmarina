@@ -1,57 +1,64 @@
-import mongoose, { type ClientSession } from "mongoose";
-import { CounterModel } from "./schemas/counter.schema";
+import mongoose from "mongoose";
+import { UserModel } from "./schemas/user.schema";
+import { BrokerAccountModel } from "./schemas/broker.schema";
+import { SheetEntryModel } from "./schemas/entry.schema";
 
 let connecting: Promise<typeof mongoose> | null = null;
 
-export async function getMongo() {
+async function syncAllIndexes() {
+  try {
+    // Drop known stale unique indexes if present
+    const userColl = UserModel.collection;
+    const staleIndexes = ["id_1", "openId_1"];
+    for (const name of staleIndexes) {
+      await userColl.dropIndex(name).catch(() => {});
+    }
+
+    const brokerColl = BrokerAccountModel.collection;
+    await brokerColl.dropIndex("id_1").catch(() => {});
+
+    const entryColl = SheetEntryModel.collection;
+    await entryColl.dropIndex("id_1").catch(() => {});
+
+    // Sync active schema indexes
+    await Promise.allSettled([
+      UserModel.syncIndexes(),
+      BrokerAccountModel.syncIndexes(),
+      SheetEntryModel.syncIndexes(),
+    ]);
+  } catch {
+    // Silently ignore if collection doesn't exist yet
+  }
+}
+
+export async function connectDatabase() {
   if (mongoose.connection.readyState === 1) return mongoose;
   const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error("MONGODB_URI is not configured");
+  if (!uri) throw new Error("MONGODB_URI is not configured in environment variables");
   if (!connecting) {
-    connecting = mongoose.connect(uri, { serverSelectionTimeoutMS: 8000, maxPoolSize: 10 }).catch(error => {
-      connecting = null;
-      throw error;
-    });
+    connecting = mongoose
+      .connect(uri, { serverSelectionTimeoutMS: 8000, maxPoolSize: 10 })
+      .then(async m => {
+        await syncAllIndexes();
+        return m;
+      })
+      .catch(error => {
+        connecting = null;
+        throw error;
+      });
   }
   return connecting;
 }
 
-export async function pingMongo() {
-  const connection = await getMongo();
-  await connection.connection.db?.command({ ping: 1 });
+export const getMongo = connectDatabase;
+
+export async function pingDatabase() {
+  await connectDatabase();
+  await mongoose.connection.db?.command({ ping: 1 });
   return true;
 }
 
-export async function closeMongo() {
+export async function closeDatabase() {
   connecting = null;
   if (mongoose.connection.readyState !== 0) await mongoose.disconnect();
-}
-
-export type IdSequence = "users" | "brokerAccounts" | "sheetEntries";
-
-export async function ensureCounterDocuments() {
-  await getMongo();
-  for (const sequence of ["users", "brokerAccounts", "sheetEntries"] as IdSequence[]) {
-    try {
-      await CounterModel.updateOne({ _id: sequence }, { $setOnInsert: { seq: 0 } }, { upsert: true });
-    } catch (error: any) {
-      if (error?.code !== 11000) throw error;
-    }
-  }
-}
-
-export async function nextId(sequence: IdSequence, session?: ClientSession) {
-  await getMongo();
-  const counter = await CounterModel.findOneAndUpdate(
-    { _id: sequence },
-    { $inc: { seq: 1 } },
-    { new: true, session }
-  ).lean();
-  if (!counter) throw new Error(`Counter ${sequence} is not initialized`);
-  return counter.seq;
-}
-
-export async function ensureCounterAtLeast(sequence: IdSequence, value: number) {
-  await getMongo();
-  await CounterModel.updateOne({ _id: sequence }, { $max: { seq: value } });
 }

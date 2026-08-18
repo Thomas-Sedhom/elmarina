@@ -2,8 +2,7 @@ export type Role = "admin" | "broker";
 export type EntryType = "work" | "breakage";
 
 export type User = {
-  id: number;
-  openId: string;
+  id: string;
   name: string | null;
   phone: string | null;
   passwordHash: string | null;
@@ -14,19 +13,38 @@ export type User = {
   lastSignedIn: Date;
 };
 
-export type InsertUser = Partial<Omit<User, "id" | "createdAt" | "updatedAt" | "lastSignedIn">> & Pick<User, "openId"> & Partial<Pick<User, "createdAt" | "updatedAt" | "lastSignedIn">>;
+export type InsertUser = {
+  name?: string | null;
+  phone?: string | null;
+  passwordHash?: string | null;
+  email?: string | null;
+  role?: Role;
+  createdAt?: Date;
+  updatedAt?: Date;
+  lastSignedIn?: Date;
+};
+
+export type BrokerAccount = {
+  id: string;
+  userId: string;
+  name: string | null;
+  phone: string | null;
+  totalWeight: string;
+  totalCash: string;
+  isBlocked: boolean;
+};
 
 export type SheetEntry = {
-  id: number;
-  brokerAccountId: number;
+  id: string;
+  brokerAccountId: string;
   businessDate: Date;
   weight: string;
   description: string;
   cash: string;
   notes: string | null;
   type: EntryType;
-  createdBy: number;
-  updatedBy: number;
+  createdBy: string;
+  updatedBy: string;
   createdAt: Date;
   updatedAt: Date;
 };

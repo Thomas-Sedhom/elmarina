@@ -5,9 +5,15 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
+  const [, navigate] = useLocation();
   const { user, logout, logoutPending } = useAuth({ redirectPath: "/login" });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
+
+  if (user && user.role === "broker") {
+    navigate("/portal");
+    return <div className="min-h-screen bg-[#f7f4ef]" />;
+  }
 
   if (!user) return <div className="min-h-screen bg-[#f7f4ef]" />;
 
