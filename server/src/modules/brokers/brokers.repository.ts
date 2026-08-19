@@ -26,6 +26,8 @@ type PopulatedBrokerAccount = {
   totalWeight: mongoose.Types.Decimal128;
   totalCash: mongoose.Types.Decimal128;
   isBlocked?: boolean;
+  isDeleted?: boolean;
+  deletedAt?: Date | null;
 };
 
 function toBroker(accountDoc: PopulatedBrokerAccount, userDoc: MongoUser): BrokerAccount {
@@ -37,12 +39,14 @@ function toBroker(accountDoc: PopulatedBrokerAccount, userDoc: MongoUser): Broke
     totalWeight: decimal(accountDoc.totalWeight),
     totalCash: decimal(accountDoc.totalCash),
     isBlocked: Boolean(accountDoc.isBlocked),
+    isDeleted: Boolean(accountDoc.isDeleted),
+    deletedAt: accountDoc.deletedAt ?? null,
   };
 }
 
 export class BrokersRepository {
   async list(search?: string): Promise<BrokerAccount[]> {
-    const accounts = (await BrokerAccountModel.find()
+    const accounts = (await BrokerAccountModel.find({ isDeleted: { $ne: true } })
       .populate("userId")
       .sort({ updatedAt: -1 })
       .lean()) as unknown as PopulatedBrokerAccount[];
@@ -93,6 +97,23 @@ export class BrokersRepository {
     return toBroker(account, account.userId);
   }
 
+  async softDelete(id: string): Promise<boolean> {
+    if (!mongoose.Types.ObjectId.isValid(id)) return false;
+    const account = await BrokerAccountModel.findByIdAndUpdate(
+      id,
+      { $set: { isDeleted: true, deletedAt: new Date() } },
+      { new: true }
+    );
+    return Boolean(account);
+  }
+
+  async updatePassword(id: string, newPassword: string): Promise<boolean> {
+    if (!mongoose.Types.ObjectId.isValid(id)) return false;
+    const account = await BrokerAccountModel.findById(id).lean();
+    if (!account) return false;
+    return usersRepository.updatePassword(account.userId.toString(), newPassword);
+  }
+
   async create(input: { name: string; phone: string; password: string }): Promise<{ id: string; userId: string }> {
     const phone = normalizePhone(input.phone);
     return mongoose.connection.transaction(async session => {
@@ -108,7 +129,7 @@ export class BrokersRepository {
             role: "broker",
           },
         ],
-        { session }
+        { session, ordered: true }
       );
 
       const [account] = await BrokerAccountModel.create(
@@ -119,7 +140,7 @@ export class BrokersRepository {
             totalCash: mongoDecimal("0"),
           },
         ],
-        { session }
+        { session, ordered: true }
       );
 
       return { id: account._id.toString(), userId: user._id.toString() };

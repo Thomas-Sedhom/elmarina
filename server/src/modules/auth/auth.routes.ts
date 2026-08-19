@@ -15,4 +15,10 @@ router.post("/login", asyncHandler(async (req, res) => {
 router.get("/me", requireAuth, asyncHandler(async (req, res) => sendData(res, await authService.me(req))));
 router.post("/logout", asyncHandler(async (req, res) => sendData(res, authService.logout(req, res))));
 
+const passwordInput = z.object({ newPassword: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل").max(128) });
+router.patch("/change-password", requireAuth, asyncHandler(async (req, res) => {
+  const { newPassword } = passwordInput.parse(req.body);
+  sendData(res, await authService.changePassword(req.user!.id, newPassword));
+}));
+
 export default router;

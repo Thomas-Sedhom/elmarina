@@ -6,6 +6,8 @@ export interface MongoBrokerAccount {
   totalWeight: mongoose.Types.Decimal128;
   totalCash: mongoose.Types.Decimal128;
   isBlocked: boolean;
+  isDeleted: boolean;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +35,15 @@ export const BrokerAccountSchema = new Schema<MongoBrokerAccount>(
       type: Boolean,
       default: false,
       index: true
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     },
   },
   { timestamps: true, versionKey: false }

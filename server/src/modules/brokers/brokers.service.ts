@@ -21,6 +21,16 @@ export class BrokersService {
     if (!account) throw NotFoundError("Broker account not found");
     return account;
   }
+  async softDelete(id: string) {
+    const success = await brokersRepository.softDelete(id);
+    if (!success) throw NotFoundError("Broker account not found");
+    return { success: true };
+  }
+  async updatePassword(id: string, newPassword: string) {
+    const success = await brokersRepository.updatePassword(id, newPassword);
+    if (!success) throw NotFoundError("Broker account not found");
+    return { success: true };
+  }
 }
 
 export const brokersService = new BrokersService();

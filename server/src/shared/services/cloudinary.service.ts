@@ -138,7 +138,7 @@ export class CloudinaryService {
   /**
    * Generates an optimized, auto-formatted Cloudinary image URL.
    */
-  public getOptimizedUrl(publicId: string, options: TransformationOptions = {}): string {
+  public getOptimizedUrl(publicId: string, options: Record<string, any> = {}): string {
     this.init();
     const defaults = {
       fetch_format: "auto",

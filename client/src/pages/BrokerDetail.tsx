@@ -15,9 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
-import { ArrowRight, Edit3, Eye, EyeOff, FileSpreadsheet, Loader2, Plus, Trash2, Wallet, Weight } from "lucide-react";
+import { ArrowRight, CheckCircle2, Edit3, Eye, EyeOff, FileSpreadsheet, KeyRound, Loader2, Plus, Trash2, Wallet, Weight } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useRoute } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 
 type FormState = {
   id?: string;
@@ -40,9 +40,15 @@ const emptyForm = (): FormState => ({
 
 export default function BrokerDetail() {
   const [, params] = useRoute("/admin/brokers/:id");
+  const [, navigate] = useLocation();
   const id = params?.id || "";
   const [formOpen, setFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [form, setForm] = useState<FormState>(emptyForm());
   const utils = api.useUtils();
   const account = api.brokers.get.useQuery({ id }, { enabled: Boolean(id) });
@@ -75,6 +81,24 @@ export default function BrokerDetail() {
   const toggleBlock = api.brokers.toggleBlock.useMutation({
     onSuccess: () => {
       utils.brokers.get.invalidate({ id });
+    },
+  });
+
+  const deleteBroker = api.brokers.delete.useMutation({
+    onSuccess: () => {
+      utils.brokers.list.invalidate();
+      navigate("/admin");
+    },
+  });
+
+  const updatePasswordMutation = api.brokers.updatePassword.useMutation({
+    onSuccess: () => {
+      setNewPassword("");
+      setPasswordSuccess(true);
+      setTimeout(() => {
+        setPasswordSuccess(false);
+        setPasswordModalOpen(false);
+      }, 1500);
     },
   });
 
@@ -172,13 +196,13 @@ export default function BrokerDetail() {
                     {account.data.phone}
                   </p>
                 </div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={toggleBlock.isPending}
                     onClick={() => toggleBlock.mutate({ id: account.data!.id, isBlocked: !account.data!.isBlocked })}
-                    className={`h-11 rounded-xl font-bold text-xs gap-1.5 transition ${
+                    className={`h-11 rounded-xl font-bold text-xs gap-1.5 transition cursor-pointer ${
                       account.data.isBlocked
                         ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
                         : "border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100"
@@ -196,7 +220,25 @@ export default function BrokerDetail() {
                       </>
                     )}
                   </Button>
-                  <Button onClick={openAdd} className="h-11 rounded-xl bg-[#201b17] text-white hover:bg-[#3a3028] shadow-md transition font-bold text-sm">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setPasswordModalOpen(true)}
+                    className="h-11 rounded-xl border-[#e5ded4] bg-white text-[#201b17] hover:bg-[#faf8f5] font-bold text-xs gap-1.5 transition cursor-pointer"
+                  >
+                    <KeyRound size={15} className="text-[#c69a5d]" />
+                    <span>تغيير كلمة المرور</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDeleteAccountOpen(true)}
+                    className="h-11 rounded-xl border-red-200 bg-red-50/90 text-red-700 hover:bg-red-100 hover:border-red-300 font-bold text-xs gap-1.5 transition cursor-pointer"
+                  >
+                    <Trash2 size={15} className="text-red-600" />
+                    <span>حذف الحساب</span>
+                  </Button>
+                  <Button onClick={openAdd} className="h-11 rounded-xl bg-[#201b17] text-white hover:bg-[#3a3028] shadow-md transition font-bold text-sm cursor-pointer">
                     <Plus size={18} className="ml-1.5" />
                     إضافة حركة
                   </Button>
@@ -473,6 +515,93 @@ export default function BrokerDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={deleteAccountOpen} onOpenChange={setDeleteAccountOpen}>
+        <AlertDialogContent dir="rtl" className="bg-white rounded-2xl p-6 border border-[#e5ded4] shadow-2xl">
+          <AlertDialogHeader className="text-right">
+            <AlertDialogTitle className="font-serif text-2xl text-[#201b17]">حذف حساب الأبونيه؟</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-[#8d7c6a] mt-2 leading-relaxed">
+              هل أنت متأكد من حذف حساب الأبونيه ({account.data?.name})؟ سيتم حذف الحساب بشكل مؤقت (Soft Delete) وإخفاؤه من قائمة العملاء النشطين.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2 sm:justify-start mt-4">
+            <AlertDialogCancel className="rounded-xl border-[#e2d9cd] hover:bg-[#faf8f5]">إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteBroker.isPending}
+              className="rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-sm font-semibold"
+              onClick={() => deleteBroker.mutate({ id })}
+            >
+              {deleteBroker.isPending ? <Loader2 className="animate-spin" /> : "تأكيد حذف الحساب"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Broker Change Password Dialog */}
+      <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
+        <DialogContent dir="rtl" className="bg-white rounded-3xl p-6 border border-[#e5ded4] shadow-2xl sm:max-w-md">
+          <DialogHeader className="text-right border-b border-[#f0e9df] pb-3">
+            <DialogTitle className="font-serif text-xl font-bold text-[#201b17] flex items-center gap-2">
+              <KeyRound size={18} className="text-[#c69a5d]" />
+              <span>تغيير كلمة مرور ({account.data?.name})</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          {passwordSuccess ? (
+            <div className="py-6 text-center space-y-2">
+              <CheckCircle2 size={40} className="mx-auto text-emerald-600" />
+              <p className="font-bold text-base text-[#201b17]">تم تغيير كلمة المرور بنجاح!</p>
+            </div>
+          ) : (
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                if (newPassword.length < 8) return;
+                updatePasswordMutation.mutate({ id, newPassword });
+              }}
+              className="space-y-4 pt-2"
+            >
+              <div className="space-y-1.5 text-right">
+                <Label className="text-xs font-semibold text-[#201b17]">كلمة المرور الجديدة للأبونيه</Label>
+                <div className="relative">
+                  <Input
+                    required
+                    minLength={8}
+                    dir="ltr"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="h-11 rounded-xl bg-white !border !border-black pl-10 text-sm text-[#201b17] placeholder:text-[#8d7c6a] focus:border-black focus:ring-1 focus:ring-black"
+                    style={{ borderColor: "#000000" }}
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8d7c6a] hover:text-black cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-[#8d7c6a]">8 أحرف أو أرقام على الأقل</p>
+              </div>
+
+              {updatePasswordMutation.error && (
+                <div className="rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-100">
+                  تعذر تغيير كلمة المرور. يرجى المحاولة مجدداً.
+                </div>
+              )}
+
+              <Button
+                disabled={updatePasswordMutation.isPending || newPassword.length < 8}
+                className="w-full h-11 rounded-xl bg-[#201b17] text-white hover:bg-[#3a3028] font-bold text-sm shadow-md transition cursor-pointer"
+              >
+                {updatePasswordMutation.isPending ? <Loader2 className="animate-spin" /> : "حفظ كلمة المرور"}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

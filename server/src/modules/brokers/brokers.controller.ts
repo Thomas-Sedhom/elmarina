@@ -16,3 +16,12 @@ export const toggleBlockBroker = asyncHandler(async (req: Request, res: Response
   const { isBlocked } = blockInput.parse(req.body);
   sendData(res, await brokersService.toggleBlock(idSchema.parse(req.params.id), isBlocked));
 });
+export const deleteBroker = asyncHandler(async (req: Request, res: Response) => {
+  sendData(res, await brokersService.softDelete(idSchema.parse(req.params.id)));
+});
+
+const passwordInput = z.object({ newPassword: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل").max(128) });
+export const updateBrokerPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { newPassword } = passwordInput.parse(req.body);
+  sendData(res, await brokersService.updatePassword(idSchema.parse(req.params.id), newPassword));
+});

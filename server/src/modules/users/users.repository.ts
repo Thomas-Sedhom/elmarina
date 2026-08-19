@@ -44,6 +44,14 @@ export class UsersRepository {
     await UserModel.updateOne({ _id: id }, { $set: { lastSignedIn: new Date() } });
   }
 
+  async updatePassword(userId: string, newPassword: string): Promise<boolean> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) return false;
+    const res = await UserModel.findByIdAndUpdate(userId, {
+      $set: { passwordHash: hashPassword(newPassword) },
+    });
+    return Boolean(res);
+  }
+
   async ensureSeedAdmin(): Promise<void> {
     const phone = normalizePhone(process.env.ADMIN_PHONE || "01023999511");
     const password = process.env.ADMIN_PASSWORD || "Rm-24222682";

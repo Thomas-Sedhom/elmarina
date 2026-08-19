@@ -27,6 +27,12 @@ export class AuthService {
     res.clearCookie(COOKIE_NAME, { ...getSessionCookieOptions(req), maxAge: -1 });
     return { success: true };
   }
+
+  async changePassword(userId: string, newPassword: string) {
+    const success = await usersRepository.updatePassword(userId, newPassword);
+    if (!success) throw UnauthorizedError("User not found");
+    return { success: true };
+  }
 }
 
 export const authService = new AuthService();

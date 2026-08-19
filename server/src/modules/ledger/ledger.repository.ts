@@ -99,7 +99,7 @@ export class LedgerRepository {
             updatedBy: new mongoose.Types.ObjectId(input.updatedBy),
           },
         ],
-        { session }
+        { session, ordered: true }
       );
       await updateTotals(
         input.brokerAccountId,

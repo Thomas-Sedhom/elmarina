@@ -11,6 +11,8 @@ import {
   Filter,
   Gem,
   LogOut,
+  Package,
+  Plus,
   RefreshCw,
   Search,
   Sparkles,
@@ -19,7 +21,7 @@ import {
   Weight,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 
 function formatWeight(value: string | number) {
   const num = Number(value);
@@ -136,13 +138,29 @@ export default function BrokerPortal() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Link
+              href="/portal/new-request"
+              className="flex h-9 items-center gap-1.5 rounded-xl bg-[#201b17] px-3 text-xs font-bold text-white hover:bg-[#3a3028] active:scale-95 transition shadow-xs"
+            >
+              <Plus size={14} />
+              <span>طلب جديد</span>
+            </Link>
+
+            <Link
+              href="/portal/products"
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-[#ad7d3f]/40 bg-[#ad7d3f]/10 px-3 text-xs font-bold text-[#8a5d24] hover:bg-[#ad7d3f]/20 active:scale-95 transition"
+            >
+              <Package size={14} />
+              <span className="hidden xs:inline">المعروضات</span>
+            </Link>
+
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
               title="تحديث البيانات"
               aria-label="تحديث البيانات"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e5ded4] bg-[#faf8f5] text-[#5c4d3e] hover:bg-white active:scale-95 transition"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#e5ded4] bg-[#faf8f5] text-[#5c4d3e] hover:bg-white active:scale-95 transition cursor-pointer"
             >
               <RefreshCw size={16} className={isRefreshing ? "animate-spin text-[#ad7d3f]" : ""} />
             </button>
@@ -151,7 +169,7 @@ export default function BrokerPortal() {
               size="sm"
               onClick={handleLogout}
               disabled={logoutPending}
-              className="h-9 gap-1.5 rounded-xl border-[#e5ded4] bg-white text-xs font-semibold text-[#8d7c6a] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition"
+              className="h-9 gap-1.5 rounded-xl border-[#e5ded4] bg-white text-xs font-semibold text-[#8d7c6a] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition cursor-pointer"
             >
               <LogOut size={14} />
               <span className="hidden xs:inline">خروج</span>
